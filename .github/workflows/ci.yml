@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -36,16 +36,19 @@ jobs:
       - name: Copy packages from container
         run: |
           mkdir -p ./bin
-          docker cp quickjs:/builder/bin/packages/aarch64_cortex-a53/utils/quickjs_*.ipk ./bin/
+          docker cp quickjs:/builder/bin/packages/aarch64_cortex-a53/utils/. ./bin/
+          ls -la ./bin
 
       - name: Remove Docker container
         run: docker rm quickjs
 
       - name: Upload artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: packages
           path: ./bin/*.ipk
+          if-no-files-found: error
 
   release:
     name: Release
@@ -62,5 +65,8 @@ jobs:
 
       - name: Create release
         uses: softprops/action-gh-release@v2.0.8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: ./bin/*.ipk
+          generate_release_notes: true
