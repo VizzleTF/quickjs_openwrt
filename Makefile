@@ -42,6 +42,8 @@ define Build/Prepare
 	$(call Build/Prepare/Default)
 	# Create an empty repl.c to avoid host-qjsc dependency
 	touch $(PKG_BUILD_DIR)/repl.c
+	# Patch Makefile to skip host tools
+	$(SED) '/^ifneq ($$(CROSS_PREFIX),)/,/^endif/d' $(PKG_BUILD_DIR)/Makefile
 endef
 
 define Build/Compile
