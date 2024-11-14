@@ -18,7 +18,7 @@ PKG_INSTALL:=1
 include $(INCLUDE_DIR)/package.mk
 
 define Package/quickjs
-	SECTION:=lib
+	SECTION:=libs
 	CATEGORY:=Libraries
 	URL:=https://bellard.org/quickjs
 	TITLE:=A small and embeddable Javascript engine.
