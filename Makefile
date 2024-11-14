@@ -28,9 +28,9 @@ define Package/quickjs/description
   QuickJS is a small and embeddable Javascript engine
 endef
 
-# Remove problematic flags
+# Remove problematic flags and add version
 TARGET_CFLAGS := $(filter-out -fhonour-copts,$(TARGET_CFLAGS))
-TARGET_CFLAGS += -DCONFIG_VERSION='"$(PKG_VERSION)"'
+TARGET_CFLAGS += -DCONFIG_VERSION='\"$(PKG_VERSION)\"'
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
