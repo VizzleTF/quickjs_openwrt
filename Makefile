@@ -38,19 +38,19 @@ define Build/Prepare
 endef
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) \
-		CROSS_PREFIX="$(TARGET_CROSS)" \
+	+$(MAKE_VARS) $(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
 		PREFIX="/usr" \
 		CONFIG_PREFIX="/usr" \
-		libquickjs.a libquickjs.so qjs
+		CC="$(TARGET_CC)" \
+		CROSS_PREFIX="$(TARGET_CROSS)" \
+		CFLAGS="$(TARGET_CFLAGS)" \
+		LDFLAGS="$(TARGET_LDFLAGS)" \
+		qjs libquickjs.a
 endef
 
 define Package/quickjs/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/qjs $(1)/usr/bin/
-	
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/libquickjs.so* $(1)/usr/lib/
 endef
 
 $(eval $(call BuildPackage,quickjs))
