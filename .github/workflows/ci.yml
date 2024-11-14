@@ -30,7 +30,7 @@ jobs:
       - name: Copy packages from container
         run: |
           mkdir -p ./bin
-          docker cp quickjs:/builder/bin/packages/x86_64/libs/. ./bin/
+          docker cp quickjs:/builder/bin/packages/aarch64/libs/. ./bin/
 
       - name: Remove Docker container
         run: docker rm quickjs

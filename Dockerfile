@@ -1,4 +1,4 @@
-FROM openwrt/sdk:x86_64-v23.05.5
+FROM openwrt/sdk:aarch64-v23.05.5
 
 COPY . package/feeds/libs/quickjs/
 
