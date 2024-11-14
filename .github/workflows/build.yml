@@ -1,0 +1,61 @@
+name: Build package
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build quickjs
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        arch:
+          - x86_64
+          - aarch64
+          - arm_cortex-a7
+        sdk_version:
+          - 23.05.2
+          - 23.05.5
+          - snapshot
+
+    steps:
+      - uses: actions/checkout@v4.2.1
+
+      - name: Build package with OpenWrt SDK
+        uses: openwrt/gh-action-sdk@v7
+        env:
+          ARCH: ${{ matrix.arch }}
+          SDK_URL_PATH: releases/${{ matrix.sdk_version == 'snapshot' && 'snapshots' || matrix.sdk_version }}
+          SDK_VERSION: ${{ matrix.sdk_version }}
+          FEEDNAME: quickjs
+          FEED_NAMESPACE: libs
+          KEY_BUILD: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickjs-${{ matrix.arch }}-${{ matrix.sdk_version }}
+          path: bin/packages/${{ matrix.arch }}/quickjs/*.ipk
+          
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          
+      - name: Create release
+        uses: softprops/action-gh-release@v2.0.8
+        with:
+          files: artifacts/**/*.ipk

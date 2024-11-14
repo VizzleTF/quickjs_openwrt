@@ -1,0 +1,24 @@
+# Build artifacts
+*.o
+*.so
+*.a
+*.ipk
+*.deb
+
+# Temporary files
+*~
+*.swp
+*.swo
+
+# Build directories
+/bin
+/build_dir
+/staging_dir
+/tmp
+/dl
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
