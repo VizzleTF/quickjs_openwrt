@@ -35,16 +35,13 @@ TARGET_CFLAGS := $(filter-out -fhonour-copts,$(TARGET_CFLAGS))
 TARGET_CFLAGS += \
 	-D_GNU_SOURCE \
 	-DCONFIG_BIGNUM \
-	-fwrapv
+	-fwrapv \
+	-DCONFIG_VERSION=\\\"$(PKG_VERSION)\\\"
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
 	# Create an empty repl.c to avoid host-qjsc dependency
 	touch $(PKG_BUILD_DIR)/repl.c
-	# Create VERSION file
-	echo $(PKG_VERSION) > $(PKG_BUILD_DIR)/VERSION
-	# Apply version string fix patch
-	$(SED) 's|printf("QuickJS version " CONFIG_VERSION "\\n"|printf("QuickJS version %s\\n", CONFIG_VERSION|' $(PKG_BUILD_DIR)/qjs.c
 endef
 
 define Build/Compile
