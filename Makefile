@@ -30,13 +30,12 @@ endef
 
 # Remove problematic flags
 TARGET_CFLAGS := $(filter-out -fhonour-copts,$(TARGET_CFLAGS))
+TARGET_CFLAGS += -DCONFIG_VERSION='"$(PKG_VERSION)"'
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
 	# Create an empty repl.c to avoid host-qjsc dependency
 	touch $(PKG_BUILD_DIR)/repl.c
-	# Fix version string in qjs.c
-	$(PATCH) $(PKG_BUILD_DIR) ./patches
 endef
 
 define Build/Compile
