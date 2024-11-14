@@ -34,7 +34,6 @@ TARGET_CFLAGS := $(filter-out -fhonour-copts,$(TARGET_CFLAGS))
 # Add configs from original Makefile
 TARGET_CFLAGS += \
 	-D_GNU_SOURCE \
-	-DCONFIG_VERSION=\"$(PKG_VERSION)\" \
 	-DCONFIG_BIGNUM \
 	-fwrapv
 
@@ -42,6 +41,8 @@ define Build/Prepare
 	$(call Build/Prepare/Default)
 	# Create an empty repl.c to avoid host-qjsc dependency
 	touch $(PKG_BUILD_DIR)/repl.c
+	# Create VERSION file
+	echo $(PKG_VERSION) > $(PKG_BUILD_DIR)/VERSION
 endef
 
 define Build/Compile
