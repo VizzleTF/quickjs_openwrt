@@ -18,10 +18,10 @@ PKG_INSTALL:=1
 include $(INCLUDE_DIR)/package.mk
 
 define Package/quickjs
-	SECTION:=libs
-	CATEGORY:=Libraries
+	SECTION:=utils
+	CATEGORY:=Utilities
 	URL:=https://bellard.org/quickjs
-	TITLE:=A small and embeddable Javascript engine.
+	TITLE:=QuickJS JavaScript interpreter
 	DEPENDS:=+libatomic +libpthread
 endef
 
@@ -34,16 +34,9 @@ MAKE_FLAGS += \
 	QJSC_CC="$(HOSTCC_NOCACHE)" \
 	CROSS_PREFIX="$(TARGET_CROSS)"
 
-define Build/InstallDev
-	$(INSTALL_DIR) $(1)/usr/lib $(1)/usr/include
-	$(CP) $(PKG_INSTALL_DIR)/usr/local/lib/quickjs $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/local/include/quickjs $(1)/usr/include
-endef
-
 define Package/quickjs/install
-	$(INSTALL_DIR) $(1)/usr/bin $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/local/bin/qjs $(1)/usr/bin
-	$(CP) $(PKG_INSTALL_DIR)/usr/local/lib/quickjs/libquickjs.a $(1)/usr/lib
 endef
 
 $(eval $(call BuildPackage,quickjs))
