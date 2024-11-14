@@ -21,7 +21,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Build and push Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v6.9.0
         with:
           context: .
@@ -30,24 +30,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Create Docker container
-        run: docker create --name quickjs quickjs:ci
-
-      - name: Copy packages from container
+      - name: Debug - List files in container
         run: |
-          mkdir -p ./bin
-          docker cp quickjs:/builder/bin/packages/aarch64_cortex-a53/utils/. ./bin/
-          ls -la ./bin
+          docker create --name quickjs quickjs:ci
+          docker cp quickjs:/builder/bin .
+          docker rm quickjs
+          find ./bin -type f -name "*.ipk"
 
-      - name: Remove Docker container
-        run: docker rm quickjs
+      - name: Prepare artifacts directory
+        run: |
+          mkdir -p ./artifacts
+          find ./bin -type f -name "*.ipk" -exec cp {} ./artifacts/ \;
 
       - name: Upload artifacts
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: packages
-          path: ./bin/*.ipk
+          path: ./artifacts/*.ipk
           if-no-files-found: error
 
   release:
@@ -61,12 +61,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: packages
-          path: ./bin
+          path: ./artifacts
 
       - name: Create release
         uses: softprops/action-gh-release@v2.0.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: ./bin/*.ipk
+          files: ./artifacts/*.ipk
           generate_release_notes: true
