@@ -2,60 +2,41 @@ name: Build package
 
 on:
   push:
-    branches:
-      - main
     tags:
       - v*
+    branches:
+      - main
   pull_request:
     branches:
       - main
 
 jobs:
   build:
-    name: Build quickjs
+    name: Build QuickJS package
     runs-on: ubuntu-latest
     
-    strategy:
-      matrix:
-        arch:
-          - x86_64
-          - aarch64
-          - arm_cortex-a7
-        sdk_version:
-          - 23.05.2
-          - 23.05.5
-          - snapshot
-
     steps:
       - uses: actions/checkout@v4.2.1
-
-      - name: Build package with OpenWrt SDK
-        uses: openwrt/gh-action-sdk@v7
-        env:
-          ARCH: ${{ matrix.arch }}
-          SDK_URL_PATH: releases/${{ matrix.sdk_version == 'snapshot' && 'snapshots' || matrix.sdk_version }}
-          SDK_VERSION: ${{ matrix.sdk_version }}
-          FEEDNAME: quickjs
-          FEED_NAMESPACE: libs
-          KEY_BUILD: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6.9.0
         with:
-          name: quickjs-${{ matrix.arch }}-${{ matrix.sdk_version }}
-          path: bin/packages/${{ matrix.arch }}/quickjs/*.ipk
-          
-  release:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          
-      - name: Create release
+          context: .
+          tags: quickjs:ci
+
+      - name: Create Docker container
+        run: docker create --name quickjs quickjs:ci
+
+      - name: Copy packages from container
+        run: |
+          mkdir -p ./bin
+          docker cp quickjs:/builder/bin/packages/x86_64/libs/. ./bin/
+
+      - name: Remove Docker container
+        run: docker rm quickjs
+
+      - name: Release
         uses: softprops/action-gh-release@v2.0.8
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: artifacts/**/*.ipk
+          files: ./bin/*.ipk
