@@ -28,9 +28,15 @@ define Package/quickjs/description
   QuickJS is a small and embeddable Javascript engine
 endef
 
-# Remove problematic flags and add version
+# Remove problematic flags
 TARGET_CFLAGS := $(filter-out -fhonour-copts,$(TARGET_CFLAGS))
-TARGET_CFLAGS += -DCONFIG_VERSION='\"$(PKG_VERSION)\"'
+
+# Add configs from original Makefile
+TARGET_CFLAGS += \
+	-D_GNU_SOURCE \
+	-DCONFIG_VERSION=\"$(PKG_VERSION)\" \
+	-DCONFIG_BIGNUM \
+	-fwrapv
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
@@ -44,8 +50,13 @@ define Build/Compile
 		CONFIG_PREFIX="/usr" \
 		CC="$(TARGET_CC)" \
 		CROSS_PREFIX="$(TARGET_CROSS)" \
+		AR="$(TARGET_AR)" \
+		STRIP="$(TARGET_STRIP)" \
 		CFLAGS="$(TARGET_CFLAGS)" \
 		LDFLAGS="$(TARGET_LDFLAGS)" \
+		CONFIG_LTO="" \
+		CONFIG_DEFAULT_AR=y \
+		OBJDIR="$(PKG_BUILD_DIR)/.obj" \
 		qjs libquickjs.a
 endef
 
