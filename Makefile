@@ -26,8 +26,7 @@ define Package/quickjs
 endef
 
 define Package/quickjs/description
-	QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt.
-	It optionally supports mathematical extensions such as big decimal floating point numbers (BigDecimal), big binary floating point numbers (BigFloat) and operator overloading.
+	QuickJS is a small and embeddable Javascript engine.
 endef
 
 MAKE_FLAGS += \
