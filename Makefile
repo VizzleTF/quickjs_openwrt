@@ -15,29 +15,69 @@ PKG_LICENSE_FILES:=LICENSE
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
 
+include $(INCLUDE_DIR)/host-build.mk
 include $(INCLUDE_DIR)/package.mk
 
 define Package/quickjs
-	SECTION:=lib
-	CATEGORY:=Libraries
-	URL:=https://bellard.org/quickjs
-	TITLE:=A small and embeddable Javascript engine.
-	DEPENDS:=+libatomic +libpthread
+  SECTION:=libs
+  CATEGORY:=Libraries
+  TITLE:=QuickJS Javascript Engine
+  URL:=https://bellard.org/quickjs/
+  DEPENDS:=+libatomic +libpthread
 endef
 
 define Package/quickjs/description
-	QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt.
-	It optionally supports mathematical extensions such as big decimal floating point numbers (BigDecimal), big binary floating point numbers (BigFloat) and operator overloading.
+  QuickJS is a small and embeddable Javascript engine that supports the 
+  ES2020 specification.
+endef
+
+# Host build for qjsc compiler
+define Host/Configure
+	# Fix paths for host build
+	$(SED) 's|prefix=/usr/local|prefix=$(STAGING_DIR_HOST)|g' $(HOST_BUILD_DIR)/Makefile
+endef
+
+define Host/Compile
+	$(MAKE) -C $(HOST_BUILD_DIR) \
+		PREFIX="$(STAGING_DIR_HOST)" \
+		qjsc
+endef
+
+define Host/Install
+	$(INSTALL_DIR) $(STAGING_DIR_HOST)/bin
+	$(INSTALL_BIN) $(HOST_BUILD_DIR)/qjsc $(STAGING_DIR_HOST)/bin/
 endef
 
 MAKE_FLAGS += \
-	QJSC_CC="$(HOSTCC_NOCACHE)" \
+	PREFIX=/usr \
+	CONFIG_PREFIX=/usr \
 	CROSS_PREFIX="$(TARGET_CROSS)"
 
-define Build/InstallDev
-	$(INSTALL_DIR) $(1)/usr/lib $(1)/usr/include
-	$(CP) $(PKG_INSTALL_DIR)/usr/local/lib/quickjs $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/local/include/quickjs $(1)/usr/include
+# Remove OpenWrt's default CFLAGS that might conflict
+TARGET_CFLAGS := $(filter-out -fhonour-copts,$(TARGET_CFLAGS))
+
+define Build/Configure
+	# Replace default gcc with cross compiler
+	$(SED) 's|gcc|$(TARGET_CC)|g' $(PKG_BUILD_DIR)/Makefile
+	# Fix paths
+	$(SED) 's|prefix=/usr/local|prefix=/usr|g' $(PKG_BUILD_DIR)/Makefile
 endef
 
+define Build/Compile
+	+$(MAKE_VARS) $(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
+		$(MAKE_FLAGS) \
+		PREFIX="/usr" \
+		CROSS_PREFIX="$(TARGET_CROSS)" \
+		qjs libquickjs.so
+endef
+
+define Package/quickjs/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/qjs $(1)/usr/bin/
+	
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/libquickjs.so* $(1)/usr/lib/
+endef
+
+$(eval $(call HostBuild))
 $(eval $(call BuildPackage,quickjs))
