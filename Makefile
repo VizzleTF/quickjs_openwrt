@@ -38,22 +38,26 @@ TARGET_CFLAGS += \
 	-fwrapv \
 	-DCONFIG_VERSION=\\\"$(PKG_VERSION)\\\"
 
+MAKE_FLAGS += \
+	PREFIX=/usr \
+	CROSS_PREFIX=$(TARGET_CROSS) \
+	CC="$(TARGET_CC)" \
+	HOST_CC="gcc" \
+	AR="$(TARGET_AR)" \
+	STRIP="$(TARGET_STRIP)"
+
 define Build/Prepare
 	$(call Build/Prepare/Default)
-	# Create an empty repl.c to avoid host-qjsc dependency
-	touch $(PKG_BUILD_DIR)/repl.c
-	# Patch Makefile to skip host tools
-	$(SED) '/^ifneq ($$(CROSS_PREFIX),)/,/^endif/d' $(PKG_BUILD_DIR)/Makefile
+	$(CP) ./files/repl.c $(PKG_BUILD_DIR)/
+endef
+
+define Build/Configure
+	$(INSTALL_DATA) ./files/config.mk $(PKG_BUILD_DIR)/
 endef
 
 define Build/Compile
 	+$(MAKE_VARS) $(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
-		PREFIX="/usr" \
-		CONFIG_PREFIX="/usr" \
-		CC="$(TARGET_CC)" \
-		CROSS_PREFIX="$(TARGET_CROSS)" \
-		AR="$(TARGET_AR)" \
-		STRIP="$(TARGET_STRIP)" \
+		$(MAKE_FLAGS) \
 		CFLAGS="$(TARGET_CFLAGS)" \
 		LDFLAGS="$(TARGET_LDFLAGS)" \
 		CONFIG_LTO="" \
