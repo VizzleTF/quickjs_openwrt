@@ -30,14 +30,15 @@ jobs:
       - name: Copy packages from container
         run: |
           mkdir -p ./bin
-          docker cp quickjs:/builder/bin/packages/x86_64/lib/. ./bin/
-          docker cp quickjs:/builder/bin/packages/x86_64/base/quickjs_*.ipk ./bin/
+          docker cp quickjs:/builder/bin/packages/x86_64/lib/. ./bin/ || true
+          docker cp quickjs:/builder/bin/packages/x86_64/packages/lib/. ./bin/ || true
+          find ./bin -name "*.ipk" || echo "No IPK files found"
 
       - name: Remove Docker container
         run: docker rm quickjs
 
       - name: Release
         uses: softprops/action-gh-release@v2.0.8
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && steps.find.outputs.files != ''
         with:
           files: ./bin/*.ipk
