@@ -1,8 +1,0 @@
---- a/quickjs-2024-01-13/qjs.c
-+++ b/quickjs-2024-01-13/qjs.c
-@@ -271,7 +271,7 @@ static void help(void)
- {
--    printf("QuickJS version " CONFIG_VERSION "\n"
-+    printf("QuickJS version %s\n", CONFIG_VERSION
-            "usage: qjs [options] [files]");
- }
