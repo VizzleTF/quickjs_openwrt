@@ -1,11 +1,12 @@
 FROM openwrt/sdk:x86_64-v23.05.5
 
-# Create feed directory
-RUN mkdir -p /builder/package/feeds/libs/quickjs
+RUN ./scripts/feeds update -a && \
+    ./scripts/feeds install luci-base && \
+    mkdir -p package/feeds/libs/quickjs
 
-# Copy package files
-COPY . /builder/package/feeds/libs/quickjs/
+COPY . package/feeds/libs/quickjs/
 
-# Build package
 RUN make defconfig && \
-    make package/quickjs/compile V=s
+    make package/quickjs/compile V=s && \
+    mkdir -p bin/packages/x86_64/libs && \
+    cp bin/packages/x86_64/base/quickjs_*.ipk bin/packages/x86_64/libs/
