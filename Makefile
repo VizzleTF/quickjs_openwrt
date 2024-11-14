@@ -21,18 +21,34 @@ define Package/quickjs
 	SECTION:=utils
 	CATEGORY:=Utilities
 	URL:=https://bellard.org/quickjs
-	TITLE:=QuickJS JavaScript interpreter
+	TITLE:=QuickJS JavaScript interpreter (minimal build)
 	DEPENDS:=+libatomic +libpthread
 endef
 
 define Package/quickjs/description
-	QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt.
-	It optionally supports mathematical extensions such as big decimal floating point numbers (BigDecimal), big binary floating point numbers (BigFloat) and operator overloading.
+	Minimal QuickJS build with URL support only.
 endef
 
+# Патчим исходники для минимальной сборки
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	$(INSTALL_DIR) $(PKG_BUILD_DIR)/minimal
+	$(CP) ./files/minimal/* $(PKG_BUILD_DIR)/minimal/
+endef
+
+# Модифицируем флаги компиляции
+TARGET_CFLAGS += -DCONFIG_QUICKJS_MINIMAL
 MAKE_FLAGS += \
 	QJSC_CC="$(HOSTCC_NOCACHE)" \
-	CROSS_PREFIX="$(TARGET_CROSS)"
+	CROSS_PREFIX="$(TARGET_CROSS)" \
+	CONFIG_LTO= \
+	CONFIG_DEFAULT_ES= \
+	CONFIG_STACK_CHECK=
+
+define Build/Configure
+	$(SED) 's,^PREFIX=.*,PREFIX=/usr,' $(PKG_BUILD_DIR)/Makefile
+	$(SED) 's,^CONFIG_LTO=.*,CONFIG_LTO=y,' $(PKG_BUILD_DIR)/Makefile
+endef
 
 define Package/quickjs/install
 	$(INSTALL_DIR) $(1)/usr/bin
