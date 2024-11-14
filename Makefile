@@ -43,6 +43,8 @@ define Build/Prepare
 	touch $(PKG_BUILD_DIR)/repl.c
 	# Create VERSION file
 	echo $(PKG_VERSION) > $(PKG_BUILD_DIR)/VERSION
+	# Apply version string fix patch
+	$(SED) 's|printf("QuickJS version " CONFIG_VERSION "\\n"|printf("QuickJS version %s\\n", CONFIG_VERSION|' $(PKG_BUILD_DIR)/qjs.c
 endef
 
 define Build/Compile
