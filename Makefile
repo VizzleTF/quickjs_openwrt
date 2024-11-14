@@ -1,11 +1,3 @@
-#
-# Copyright (C) 2021 CTCGFW Project-OpenWrt
-# <https://project-openwrt.eu.org>
-#
-# This is free software, licensed under the GNU General Public License v3.
-# See /LICENSE for more information.
-#
-
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=quickjs
@@ -46,6 +38,12 @@ define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/lib $(1)/usr/include
 	$(CP) $(PKG_INSTALL_DIR)/usr/local/lib/quickjs $(1)/usr/lib
 	$(CP) $(PKG_INSTALL_DIR)/usr/local/include/quickjs $(1)/usr/include
+endef
+
+define Package/quickjs/install
+	$(INSTALL_DIR) $(1)/usr/bin $(1)/usr/lib
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/local/bin/qjs $(1)/usr/bin
+	$(CP) $(PKG_INSTALL_DIR)/usr/local/lib/quickjs/libquickjs.a $(1)/usr/lib
 endef
 
 $(eval $(call BuildPackage,quickjs))
