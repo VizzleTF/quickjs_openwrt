@@ -30,8 +30,7 @@ jobs:
       - name: Copy packages from container
         run: |
           mkdir -p ./bin
-          docker cp quickjs:/builder/bin/. ./bin/
-          find ./bin -name "*.ipk"
+          docker cp quickjs:/builder/bin/packages/x86_64/lib/. ./bin/
 
       - name: Remove Docker container
         run: docker rm quickjs
@@ -40,4 +39,4 @@ jobs:
         uses: softprops/action-gh-release@v2.0.8
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: ./bin/**/*.ipk
+          files: ./bin/*.ipk
